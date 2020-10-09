@@ -37,8 +37,8 @@ def post():
         contents = get_mansion.get_mansion(load_url)
         return render_template("result.html", contents=contents)
     except:
-        e = get_mansion.get_mansion(load_url).e
-        return render_template("result_error.html", e=e)
+        # e = get_mansion.get_mansion().e
+        return render_template("result_error.html")
 
 
 @app.route('/delete/<pk>', methods=['post'])

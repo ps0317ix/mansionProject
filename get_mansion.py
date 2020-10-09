@@ -39,6 +39,14 @@ def get_all():
     contents = cur.execute('SELECT * FROM teikyou_hantei').fetchall()
     return contents
 
+def db_search(cur, mansion_name):
+    contents = cur.execute('SELECT * FROM teikyou_hantei WHERE mansion_name = ?', (mansion_name,)).fetchall()
+    print(contents)
+    if len(contents) > 0:
+        return False
+    else:
+        return True
+
 
 def get_mansion(load_url):
     # データベースに接続する
@@ -59,13 +67,12 @@ def get_mansion(load_url):
             create_table(conn, cur)
             db_id = 1
         else:
-            cur.execute('SELECT id FROM teikyou_hantei')
-            res = cur.fetchall()
-            db_id = len(res)
+            db_id = cur.execute('SELECT id FROM teikyou_hantei ORDER BY id DESC LIMIT 1').fetchone()[0]
             print(db_id)
             db_id += 1
 
         mansions = []
+        mansion_url = []
         # 取得したマンション名を格納
         # load_url = 'https://door.ac/list?utf8=%E2%9C%93&cond%5Bcities%5D%5B%5D=27103&cond%5Bsort%5D=inquiry_price&cond%5Bcities%5D%5B%5D=27103&cond%5Bfee_min%5D=&cond%5Bfee_max%5D=&cond%5Blayouts%5D%5B%5D=11&cond%5Blayouts%5D%5B%5D=12&cond%5Bwalk_time%5D=&cond%5Bsqmeter_min%5D=&cond%5Bsqmeter_max%5D=&cond%5Bage%5D='  # 初期値
         i = 1
@@ -80,6 +87,9 @@ def get_mansion(load_url):
             # すべてのheadingクラスを検索して、その文字列を表示する
             for element in soup.find_all(class_="heading"):
                 if 'の建物' in element.text:
+                    continue
+                elif db_search(cur, element.text) == True:
+                    print('マンション名過去取得済み')
                     continue
                 mansions.append(element.text)
                 print(element.text)
