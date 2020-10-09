@@ -1,8 +1,5 @@
 import get_mansion
-from selenium import webdriver
 from flask import Flask, render_template, request, make_response, redirect, url_for
-from datetime import datetime
-import pathlib
 import sqlite3
 
 
