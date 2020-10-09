@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>提供判定ツール</title>
+        <link rel="stylesheet" href="../../static/css/style.css">
+        <script type="text/javascript">
+            function check(){
+                if (mail_form.mail.value == ""){
+                    //条件に一致する場合(メールアドレスが空の場合)
+                    alert("メールアドレスを入力してください");    //エラーメッセージを出力
+                    return false;    //送信ボタン本来の動作をキャンセルします
+                }else{
+                    //条件に一致しない場合(メールアドレスが入力されている場合)
+                    return true;    //送信ボタン本来の動作を実行します
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div class="header">
+            <a href='/'><h1>提供判定ツール</h1></a>
+        </div>
+        <div class="body">
+            <form action="/result" method="POST">
+<!--                    <input type="radio" name="site" value="HOME'S">HOME'S-->
+<!--                    <input type="radio" name="site" value="DOOR賃貸">DOOR賃貸-->
+                    DOOR賃貸URL：<a href="https://door.ac/" target="_blank">https://door.ac/</a>
+                <div>
+                    <input type="text" name="url" placeholder="URLを入力してください" style="width:300px;" onclick="return check()">
+                    <input type="submit" value="実行">
+                </div>
+
+        </form>
+<!--        <p style="padding:10px 0px 0px 0px;">１：入力欄に以下の図と同様にページのURLを貼り付けてください</p>-->
+<!--        <img src="../../static/images/hantei_image.png" alt="判定イメージ" style="width:40%;">-->
+<!--        <p>２：自動でURLからマンション名を取得し、住所・提供判定を行います</p>-->
+<!--        <p style="font-size:14px; padding-left:10px;">※提供判定はNTT西日本の管轄エリアのみで行えます</p>-->
+<!--        <p style="font-size:14px; padding-left:10px;">※提供可否不明の項目が多い場合は時間を開けてから再度行ってください</p>-->
+            <a href="/howto">使い方はこちら</a>
+        <table class="table table-striped table-hover">
+            <tr>
+                <th>id</th>
+                <th>マンション名</th>
+                <th>住所</th>
+                <th>判定結果</th>
+                <th>操作</th>
+            </tr>
+            {% for content in contents %}
+            <tr>
+                <td>{{ content[0] }}</td>
+                <td>{{ content[1] }}</td>
+                <td>{{ content[2] }}</td>
+                <td>{{ content[3] }}</td>
+                <td>
+                    <a href="/view/{{ content[0] }}"><button class="btn btn-primary">参照</button></a>
+                    <form action="/delete/{{ content[0] }}" style="display: inline" method="post">
+                        <input class="btn btn-danger" type="submit" value="削除" onclick='return confirm("削除しますがよろしいですか？")';>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+            <a href='/'>TOPへ戻る</a>
+        </div>
+    </body>
+</html>

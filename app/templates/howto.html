@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>提供判定ツール</title>
+        <link rel="stylesheet" href="../../static/css/style.css">
+    </head>
+    <body>
+        <div class="header">
+            <a href='/'><h1>提供判定ツール</h1></a>
+        </div>
+        <div class="body">
+            <form action="/result" method="POST">
+<!--                    <input type="radio" name="site" value="HOME'S">HOME'S-->
+<!--                    <input type="radio" name="site" value="DOOR賃貸">DOOR賃貸-->
+                    DOOR賃貸URL：<a href="https://door.ac/" target="_blank">https://door.ac/</a>
+                <div>
+                    <input type="text" name="url" placeholder="URLを入力してください" style="width:300px;">
+                    <input type="submit" value="実行">
+                </div>
+
+        </form>
+        <p style="padding:10px 0px 0px 0px;">１：入力欄に以下の図と同様にページのURLを貼り付けてください</p>
+        <img src="../../static/images/hantei_image.png" alt="判定イメージ" style="width:40%;">
+        <p>２：自動でURLからマンション名を取得し、住所・提供判定を行います</p>
+        <p style="font-size:14px; padding-left:10px;">※提供判定はNTT西日本の管轄エリアのみで行えます</p>
+        <p style="font-size:14px; padding-left:10px;">※提供可否不明の項目が多い場合は時間を開けてから再度行ってください</p>
+
+        </div>
+    </body>
+</html>

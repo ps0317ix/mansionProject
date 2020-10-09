@@ -1,0 +1,49 @@
+
+body{
+    margin:0px;
+    width:100%;
+}
+
+.header{
+    background-color:#5876AA;
+    display:flex;
+}
+
+h1{
+    color:#fff;
+    padding:5px;
+}
+
+a{
+  color:#5876AA;
+  text-decoration:none;
+}
+
+.body{
+  padding:10px;
+}
+
+table{
+  margin-top:30px;
+  border:0.5px solid #fff;
+}
+
+th{
+  background-color: #6785C1;
+  color:#fff;
+}
+
+td:first-child{
+  text-align:center;
+  background-color: #6D9EEB;
+  color: #fff;
+}
+
+td{
+  padding:5px 10px;
+  background-color:#C9DAF8;
+}
+
+@media (max-width:425px;){
+
+}
