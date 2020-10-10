@@ -12,7 +12,7 @@ import sqlite3
 
 def create_table(conn, c):
     # テーブルの作成
-    c.execute('''CREATE TABLE teikyou_hantei(id int PRIMARY KEY, mansion_name text, address text, result text, transaction_id text)''')
+    c.execute('''CREATE TABLE teikyou_hantei(id int PRIMARY KEY, mansion_name text, address text, result text, created_datetime TIMESTAMP DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime')))''')
 
 def table_isexist(conn, cur):
     cur.execute("""
@@ -43,9 +43,9 @@ def db_search(cur, mansion_name):
     contents = cur.execute('SELECT * FROM teikyou_hantei WHERE mansion_name = ?', (mansion_name,)).fetchall()
     print(contents)
     if len(contents) > 0:
-        return False
-    else:
         return True
+    else:
+        return False
 
 
 def get_mansion(load_url):
@@ -56,8 +56,8 @@ def get_mansion(load_url):
     transaction_id = randomname(8)
 
     try:
-        speed = 2
-        speed_han = 2
+        speed = 0
+        speed_han = 0
 
         p = pathlib.Path('../mansionProject/chromedriver')
         print(p.cwd())
@@ -67,9 +67,12 @@ def get_mansion(load_url):
             create_table(conn, cur)
             db_id = 1
         else:
-            db_id = cur.execute('SELECT id FROM teikyou_hantei ORDER BY id DESC LIMIT 1').fetchone()[0]
-            print(db_id)
-            db_id += 1
+            try:
+                db_id = cur.execute('SELECT id FROM teikyou_hantei ORDER BY id DESC LIMIT 1').fetchone()[0]
+                print(db_id)
+                db_id += 1
+            except:
+                db_id = 1
 
         mansions = []
         mansion_url = []
@@ -86,13 +89,17 @@ def get_mansion(load_url):
             city_name = soup.find(id='breadcrumb_3').text
             # すべてのheadingクラスを検索して、その文字列を表示する
             for element in soup.find_all(class_="heading"):
-                if 'の建物' in element.text:
-                    continue
-                elif db_search(cur, element.text) == True:
-                    print('マンション名過去取得済み')
-                    continue
-                mansions.append(element.text)
-                print(element.text)
+                try:
+                    print(element.text)
+                    if 'の建物' in element.text:
+                        continue
+                    elif db_search(cur, element.text) == True:
+                        print('マンション名過去取得済み')
+                        continue
+                    mansions.append(element.text)
+                except:
+                    mansions.append(element.text)
+                    print(element.text)
             # elif site == "HOME'S":
             #     html = requests.get(load_url)
             #     soup = BeautifulSoup(html.content, "html.parser")
@@ -460,7 +467,10 @@ def get_mansion(load_url):
         driver.close()
 
         print("提供判定が完了しました")
-        contents = cur.execute('SELECT * FROM teikyou_hantei WHERE transaction_id = ?', (transaction_id,)).fetchall()
+        try:
+            contents = cur.execute('SELECT * FROM teikyou_hantei WHERE transaction_id = ?', (transaction_id,)).fetchall()
+        except Exception as e:
+            print(e)
         # DB接続を閉じる
         # conn.close()
         return contents

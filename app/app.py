@@ -12,17 +12,13 @@ app = Flask(__name__, static_folder='static')
 #「/」へアクセスがあった場合
 @app.route("/")
 def index():
-    # p = pathlib.Path('../mansionProject/chromedriver')
-    # print(p.cwd())
-    # driver = webdriver.Chrome(p)
-    # driver.get("https://door.ac/")
-    contents = get_mansion.get_all()
-
-    # conn = sqlite3.connect('teikyou_hantei.db')
-    # cur = conn.cursor()
-    # cur.execute('SELECT id FROM teikyou_hantei')
-    # res = cur.fetchall()
-    # db_id = len(res)
+    conn = sqlite3.connect('teikyou_hantei.db')
+    cur = conn.cursor()
+    if get_mansion.table_isexist(conn, cur) == False:
+        get_mansion.create_table(conn, cur)
+        contents = ""
+    else:
+        contents = get_mansion.get_all()
 
     return render_template("index.html", contents=contents)
 
