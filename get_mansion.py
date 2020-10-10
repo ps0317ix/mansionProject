@@ -8,11 +8,12 @@ import re
 import pathlib
 import random, string
 import sqlite3
+import datetime
 
 
 def create_table(conn, c):
     # テーブルの作成
-    c.execute('''CREATE TABLE teikyou_hantei(id int PRIMARY KEY, mansion_name text, address text, result text, created_datetime TIMESTAMP DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime')))''')
+    c.execute('''CREATE TABLE teikyou_hantei(id int PRIMARY KEY, mansion_name text, address text, result text, transaction_id text, created_datetime TIMESTAMP DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime')))''')
 
 def table_isexist(conn, cur):
     cur.execute("""
@@ -50,14 +51,16 @@ def db_search(cur, mansion_name):
 
 def get_mansion(load_url):
     # データベースに接続する
-    conn = sqlite3.connect('teikyou_hantei.db')
+    conn = sqlite3.connect('teikyou_hantei.db', detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     cur = conn.cursor()
     dbname = 'teikyou_hantei.db'
     transaction_id = randomname(8)
+    # "TIMESTAMP"コンバータ関数 をそのまま ”DATETIME” にも使う
+    sqlite3.dbapi2.converters['DATETIME'] = sqlite3.dbapi2.converters['TIMESTAMP']
 
     try:
         speed = 0
-        speed_han = 0
+        speed_han = 2
 
         p = pathlib.Path('../mansionProject/chromedriver')
         print(p.cwd())
@@ -454,7 +457,7 @@ def get_mansion(load_url):
 
             print(db_id)
             print(transaction_id)
-            cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?)', (db_id, mansions[z], addresses[z], result, transaction_id))
+            cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?, ?)', (db_id, mansions[z], addresses[z], result, transaction_id, datetime.datetime.now()))
             # 保存を実行（忘れると保存されないので注意）
             conn.commit()
             db_id += 1
