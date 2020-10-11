@@ -9,6 +9,7 @@ import pathlib
 import random, string
 import sqlite3
 import datetime
+import set_mappin
 
 
 def create_table(conn, c):
@@ -39,6 +40,13 @@ def get_all():
     cur = conn.cursor()
     contents = cur.execute('SELECT * FROM teikyou_hantei').fetchall()
     return contents
+
+def get_mansion_all():
+    conn = sqlite3.connect('teikyou_hantei.db')
+    cur = conn.cursor()
+    contents = cur.execute('SELECT mansion_name FROM teikyou_hantei').fetchall()
+    return contents
+
 
 def db_search(cur, mansion_name):
     contents = cur.execute('SELECT * FROM teikyou_hantei WHERE mansion_name = ?', (mansion_name,)).fetchall()
@@ -287,9 +295,10 @@ def get_mansion(load_url):
                             result = "提供可否不明"
                             sheet.cell(row=z + 2, column=3).value = result
                             sheet.column_dimensions['C'].width = 20
-                            cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?)',
-                                        (db_id, mansions[z], addresses[z], result, transaction_id))
-
+                            print("id:" + str(db_id) + " マンション名:" + mansions[z] + " 住所:" + addresses[z] + " 提供結果:" + result + " トランザクションID:" + transaction_id + " 日付:" + str(datetime.datetime.now()))
+                            cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?, ?)',
+                                        (db_id, mansions[z], addresses[z], result, transaction_id, datetime.datetime.now()))
+                            db_id += 1
                             # ワークブックに名前をつけて保存する
                             book.save('result.xlsx')
                             time.sleep(5 + speed_han)
@@ -340,9 +349,9 @@ def get_mansion(load_url):
                             result = "提供可否不明"
                             sheet.cell(row=z + 2, column=3).value = result
                             sheet.column_dimensions['C'].width = 20
-                            cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?)',
-                                        (db_id, mansions[z], addresses[z], result, transaction_id))
-
+                            print("id" + str(db_id) + " マンション名:" + mansions[z] + " 住所:" + addresses[z] + " 提供結果:" + result + " トランザクションID:" + transaction_id + " 日付:" + str(datetime.datetime.now()))
+                            cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?, ?)', (db_id, mansions[z], addresses[z], result, transaction_id, datetime.datetime.now()))
+                            db_id += 1
                             # ワークブックに名前をつけて保存する
                             book.save('result.xlsx')
                             time.sleep(5 + speed_han)
@@ -382,25 +391,34 @@ def get_mansion(load_url):
                 print("号：" + addresses_num4[z])
                 try:
                     element = driver.find_element_by_link_text(addresses_num4[z])
-                    # if len(elements) > 1:
-                    #     element = elements[1]
-                    # else:
-                    #     element = elements[0]
                     print("号が一致しました")
                     element.click()
                     time.sleep(2 + speed_han)
                 except Exception as e:
-                    print(e)
-                    print("号を1件再検索")
-                    element = driver.find_element_by_partial_link_text(addresses_num4[z])
-                    element.click()
-                    time.sleep(2 + speed_han)
+                    try:
+                        print(e)
+                        print("号を1件再検索")
+                        element = driver.find_element_by_partial_link_text(addresses_num4[z])
+                        element.click()
+                        time.sleep(2 + speed_han)
+                    except Exception as e:
+                        print(e)
+                        result = "提供可否不明"
+                        sheet.cell(row=z + 2, column=3).value = result
+                        sheet.column_dimensions['C'].width = 20
+                        print("id:" + str(db_id) + " マンション名:" + mansions[z] + " 住所:" + addresses[z] + " 提供結果:" + result + " トランザクションID:" + transaction_id + " 日付:" + str(datetime.datetime.now()))
+                        cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?, ?)', (db_id, mansions[z], addresses[z], result, transaction_id, datetime.datetime.now()))
+                        db_id += 1
+                        # ワークブックに名前をつけて保存する
+                        book.save('result.xlsx')
+                        time.sleep(5 + speed_han)
+                        continue
 
             try:
                 element = driver.find_element_by_xpath('//*[@id="list-box"]/ul/li/a')
                 if element.text != "":
                     element.click()
-                    time.sleep(2 + speed_han)
+                    time.sleep(4 + speed_han)
 
                 hantei_address = driver.find_element_by_id('kakutei-box').text
                 print(hantei_address)
@@ -421,6 +439,7 @@ def get_mansion(load_url):
                     element.click()
 
             try:
+                time.sleep(3)
                 element = driver.find_element_by_id('tab_wrap_inner')
                 print(element.text)
             except Exception as e:
@@ -455,8 +474,7 @@ def get_mansion(load_url):
             sheet.column_dimensions['C'].width = 20
             sheet.column_dimensions['D'].width = 20
 
-            print(db_id)
-            print(transaction_id)
+            print("id:" + str(db_id) + " マンション名:" + mansions[z] + " 住所:" + addresses[z] + " 提供結果:" + result + " トランザクションID:" + transaction_id + " 日付:" + str(datetime.datetime.now()))
             cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?, ?)', (db_id, mansions[z], addresses[z], result, transaction_id, datetime.datetime.now()))
             # 保存を実行（忘れると保存されないので注意）
             conn.commit()
@@ -472,6 +490,7 @@ def get_mansion(load_url):
         print("提供判定が完了しました")
         try:
             contents = cur.execute('SELECT * FROM teikyou_hantei WHERE transaction_id = ?', (transaction_id,)).fetchall()
+            set_mappin.set_mappin(transaction_id)
         except Exception as e:
             print(e)
         # DB接続を閉じる

@@ -18,6 +18,10 @@
         </script>
     </head>
     <body>
+        <!-- ローディング画面 -->
+<!--        <div id="loading">-->
+<!--          <div class="spinner"></div>-->
+<!--        </div>-->
         <div class="header">
             <a href='/'><h1>提供判定ツール</h1></a>
         </div>
@@ -30,14 +34,16 @@
                     <input type="text" name="url" placeholder="URLを入力してください" style="width:300px;" onclick="return check()">
                     <input type="submit" value="実行">
                 </div>
-
-        </form>
+            </form>
 <!--        <p style="padding:10px 0px 0px 0px;">１：入力欄に以下の図と同様にページのURLを貼り付けてください</p>-->
 <!--        <img src="../../static/images/hantei_image.png" alt="判定イメージ" style="width:40%;">-->
 <!--        <p>２：自動でURLからマンション名を取得し、住所・提供判定を行います</p>-->
 <!--        <p style="font-size:14px; padding-left:10px;">※提供判定はNTT西日本の管轄エリアのみで行えます</p>-->
 <!--        <p style="font-size:14px; padding-left:10px;">※提供可否不明の項目が多い場合は時間を開けてから再度行ってください</p>-->
             <a href="/howto">使い方はこちら</a>
+            <form action="/set_all_mappin" method="GET" style="padding:30px 0px 0px 0px;">
+                <input type="submit" value="ピン植え一括実行" onclick='return confirm("ピン植えを一括で行ってもよろしいですか？")';>
+            </form>
         <table class="table table-striped table-hover">
             <tr>
                 <th>id</th>
@@ -53,7 +59,7 @@
                 <td>{{ content[2] }}</td>
                 <td>{{ content[3] }}</td>
                 <td>
-                    <a href="/view/{{ content[0] }}"><button class="btn btn-primary">参照</button></a>
+<!--                    <a href="/view/{{ content[0] }}"><button class="btn btn-primary">参照</button></a>-->
                     <form action="/delete/{{ content[0] }}" style="display: inline" method="post">
                         <input class="btn btn-danger" type="submit" value="削除" onclick='return confirm("削除しますがよろしいですか？")';>
                     </form>
@@ -64,4 +70,10 @@
             <a href='/'>TOPへ戻る</a>
         </div>
     </body>
+    <script type="text/javascript">
+        window.onload = function() {
+          const spinner = document.getElementById('loading');
+          spinner.classList.add('loaded');
+        }
+    </script>
 </html>

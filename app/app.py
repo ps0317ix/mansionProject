@@ -1,7 +1,7 @@
 import get_mansion
 from flask import Flask, render_template, request, make_response, redirect, url_for
 import sqlite3
-
+import set_mappin
 
 XLSX_MIMETYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
@@ -16,6 +16,7 @@ def index():
     cur = conn.cursor()
     if get_mansion.table_isexist(conn, cur) == False:
         get_mansion.create_table(conn, cur)
+        set_mappin.mappin_create_table()
         contents = ""
     else:
         contents = get_mansion.get_all()
@@ -31,7 +32,7 @@ def post():
     try:
         load_url = request.form["url"]
         contents = get_mansion.get_mansion(load_url)
-        return render_template("result.html", contents=contents)
+        return render_template("result.html", contents=contents, transaction_id=contents[4])
     except:
         # e = get_mansion.get_mansion().e
         return render_template("result_error.html")
@@ -44,13 +45,28 @@ def delete(pk):
     get_mansion.delete(conn, pk)
     return redirect(url_for('index'))
 
+@app.route('/delete_result/<pk>', methods=['post'])
+def delete_result(pk):
+    """ 結果削除処理 """
+    conn = sqlite3.connect('teikyou_hantei.db')
+    get_mansion.delete(conn, pk)
+    return redirect(url_for('result'))
 
-# @app.route('/view/<pk>', methods=['POST'])
-# def delete(pk):
-#     """ 結果削除処理 """
-#     conn = sqlite3.connect('teikyou_hantei.db')
-#     get_mansion.delete(conn, pk)
-#     return render_template("index.html")
+
+@app.route('/set_all_mappin', methods=['GET'])
+def call_all_setpin():
+    """ ピン植え処理 """
+    set_mappin.set_all_mappin()
+    return redirect(url_for('index'))
+
+@app.route('/set_mappin/<transaction_id>', methods=['GET'])
+def call_setpin(transaction_id):
+    """ ピン植え処理 """
+    transaction = transaction_id[4]
+    set_mappin.set_mappin(transaction)
+    return redirect(url_for('index'))
+
+
 
 @app.route('/report/<string:report_id>', methods=['GET'])
 def report3(report_id):
