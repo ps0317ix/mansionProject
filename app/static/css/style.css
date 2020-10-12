@@ -64,6 +64,10 @@ td{
   border-radius: 100%;
   animation: sk-scaleout 1.0s infinite ease-in-out;
 }
+.loaded {
+  opacity: 0;
+  visibility: hidden;
+}
 /* ローディングアニメーション */
 @keyframes sk-scaleout {
   0% {

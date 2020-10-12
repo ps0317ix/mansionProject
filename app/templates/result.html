@@ -7,6 +7,10 @@
     </head>
 
     <body>
+        <!--ローディング画面-->
+        <div id="loading">
+          <div class="spinner"></div>
+        </div>
         <div class="header">
             <h1>提供判定ツール</h1>
         </div>
@@ -41,4 +45,10 @@
             <a href='/'>TOPへ戻る</a>
         </div>
     </body>
+    <script type="text/javascript">
+        window.onload = function() {
+          const spinner = document.getElementById('loading');
+          spinner.classList.add('loaded');
+        }
+    </script>
 </html>

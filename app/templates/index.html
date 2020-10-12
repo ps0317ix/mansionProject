@@ -18,17 +18,17 @@
         </script>
     </head>
     <body>
-        <!-- ローディング画面 -->
-<!--        <div id="loading">-->
-<!--          <div class="spinner"></div>-->
-<!--        </div>-->
+        <!--ローディング画面-->
+        <div id="loading">
+          <div class="spinner"></div>
+        </div>
         <div class="header">
             <a href='/'><h1>提供判定ツール</h1></a>
         </div>
         <div class="body">
             <form action="/result" method="POST">
-<!--                    <input type="radio" name="site" value="HOME'S">HOME'S-->
-<!--                    <input type="radio" name="site" value="DOOR賃貸">DOOR賃貸-->
+                    <input type="radio" name="times" value="単体ページ" checked="checked">単体ページのみ
+                    <input type="radio" name="times" value="一括">検索条件を一括<br>
                     DOOR賃貸URL：<a href="https://door.ac/" target="_blank">https://door.ac/</a>
                 <div>
                     <input type="text" name="url" placeholder="URLを入力してください" style="width:300px;" onclick="return check()">

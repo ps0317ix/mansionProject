@@ -56,8 +56,19 @@ def db_search(cur, mansion_name):
     else:
         return False
 
+def past_search(mansions, mansion):
+    match = 0
+    for x in mansions:
+        if mansion == x:
+            match += 1
+            print("match:" + str(match))
+    if match > 0:
+        return True
 
-def get_mansion(load_url):
+
+
+
+def get_mansion(load_url, times):
     # データベースに接続する
     conn = sqlite3.connect('teikyou_hantei.db', detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     cur = conn.cursor()
@@ -82,49 +93,94 @@ def get_mansion(load_url):
                 db_id = cur.execute('SELECT id FROM teikyou_hantei ORDER BY id DESC LIMIT 1').fetchone()[0]
                 print(db_id)
                 db_id += 1
-            except:
+            except Exception as e:
+                print(e)
                 db_id = 1
 
         mansions = []
         mansion_url = []
-        # 取得したマンション名を格納
-        # load_url = 'https://door.ac/list?utf8=%E2%9C%93&cond%5Bcities%5D%5B%5D=27103&cond%5Bsort%5D=inquiry_price&cond%5Bcities%5D%5B%5D=27103&cond%5Bfee_min%5D=&cond%5Bfee_max%5D=&cond%5Blayouts%5D%5B%5D=11&cond%5Blayouts%5D%5B%5D=12&cond%5Bwalk_time%5D=&cond%5Bsqmeter_min%5D=&cond%5Bsqmeter_max%5D=&cond%5Bage%5D='  # 初期値
+
         i = 1
-        while i < 2:
-            # if site == "DOOR賃貸":
-                # load_url = load_url + '?page=' + str(i)
+        if times == "一括":
+            if "&page" in load_url:
+                load_url = re.sub('&([0-9a-zA-Z]*)=([0-9]*)', "", load_url)
+                print("正規化:" + load_url)
+            elif "?page" in load_url:
+                load_url = re.sub('?([0-9a-zA-Z]*)=([0-9]*)', "", load_url)
+                print("正規化:" + load_url)
+            load_url = load_url + '?page=' + str(i)
             html = requests.get(load_url)
             soup = BeautifulSoup(html.content, "html.parser")
             print(load_url)
-
             city_name = soup.find(id='breadcrumb_3').text
-            # すべてのheadingクラスを検索して、その文字列を表示する
-            for element in soup.find_all(class_="heading"):
-                try:
-                    print(element.text)
-                    if 'の建物' in element.text:
-                        continue
-                    elif db_search(cur, element.text) == True:
-                        print('マンション名過去取得済み')
-                        continue
-                    mansions.append(element.text)
-                except:
-                    mansions.append(element.text)
-                    print(element.text)
-            # elif site == "HOME'S":
-            #     html = requests.get(load_url)
-            #     soup = BeautifulSoup(html.content, "html.parser")
-            #     print(load_url)
-            #
-            #     print(soup)
-            #     city_name = soup.find(id='mod-breadcrumbs').contents[7]
-            #     # すべてのheadingクラスを検索して、その文字列を表示する
-            #     for element in soup.find_all(class_="bukkenName"):
-            #         if '駅 徒歩' in element.text:
-            #             continue
-            #         mansions.append(element.text)
-            #         print(element.text)
-            i += 1
+            try:
+                i_max = soup.find(class_='pagination__current-page').text
+                i_max = i_max.replace("1/", "")
+            except:
+                i_max = 2
+            print(i_max)
+            while i < int(i_max):
+                load_url = load_url + '?page=' + str(i)
+                time.sleep(3)
+                html = requests.get(load_url)
+                soup = BeautifulSoup(html.content, "html.parser")
+                # すべてのheadingクラスを検索して、その文字列を表示する
+                for element in soup.find_all(class_="heading"):
+                    try:
+                        print(element.text)
+                        if 'の建物' in element.text:
+                            continue
+                        elif db_search(cur, element.text) == True:
+                            print('マンション名過去取得済み')
+                            continue
+                        elif past_search(mansions, element.text) == True:
+                            print('マンション名が配列に重複しています')
+                            continue
+                        else:
+                            mansions.append(element.text)
+                    except Exception as e:
+                        print(e)
+                        mansions.append(element.text)
+                        print(element.text)
+                i += 1
+        else:
+            while i < 2:
+                html = requests.get(load_url)
+                soup = BeautifulSoup(html.content, "html.parser")
+                print(load_url)
+
+                city_name = soup.find(id='breadcrumb_3').text
+                # すべてのheadingクラスを検索して、その文字列を表示する
+                for element in soup.find_all(class_="heading"):
+                    try:
+                        print(element.text)
+                        if 'の建物' in element.text:
+                            continue
+                        elif db_search(cur, element.text) == True:
+                            print('マンション名過去取得済み')
+                            continue
+                        elif past_search(mansions, element.text) == True:
+                            print('マンション名が配列に重複しています')
+                            continue
+                        mansions.append(element.text)
+                    except Exception as e:
+                        print(e)
+                        mansions.append(element.text)
+                        print(element.text)
+                # elif site == "HOME'S":
+                #     html = requests.get(load_url)
+                #     soup = BeautifulSoup(html.content, "html.parser")
+                #     print(load_url)
+                #
+                #     print(soup)
+                #     city_name = soup.find(id='mod-breadcrumbs').contents[7]
+                #     # すべてのheadingクラスを検索して、その文字列を表示する
+                #     for element in soup.find_all(class_="bukkenName"):
+                #         if '駅 徒歩' in element.text:
+                #             continue
+                #         mansions.append(element.text)
+                #         print(element.text)
+                i += 1
 
         print(mansions)
 
@@ -349,7 +405,7 @@ def get_mansion(load_url):
                             result = "提供可否不明"
                             sheet.cell(row=z + 2, column=3).value = result
                             sheet.column_dimensions['C'].width = 20
-                            print("id" + str(db_id) + " マンション名:" + mansions[z] + " 住所:" + addresses[z] + " 提供結果:" + result + " トランザクションID:" + transaction_id + " 日付:" + str(datetime.datetime.now()))
+                            print("id:" + str(db_id) + " マンション名:" + mansions[z] + " 住所:" + addresses[z] + " 提供結果:" + result + " トランザクションID:" + transaction_id + " 日付:" + str(datetime.datetime.now()))
                             cur.execute('INSERT INTO teikyou_hantei VALUES (?, ?, ?, ?, ?, ?)', (db_id, mansions[z], addresses[z], result, transaction_id, datetime.datetime.now()))
                             db_id += 1
                             # ワークブックに名前をつけて保存する

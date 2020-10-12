@@ -31,7 +31,8 @@ def howto():
 def post():
     try:
         load_url = request.form["url"]
-        contents = get_mansion.get_mansion(load_url)
+        times = request.form["times"]
+        contents = get_mansion.get_mansion(load_url, times)
         return render_template("result.html", contents=contents, transaction_id=contents[4])
     except:
         # e = get_mansion.get_mansion().e

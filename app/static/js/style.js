@@ -7,4 +7,9 @@ function check(){
                     //条件に一致しない場合(メールアドレスが入力されている場合)
                     return true;    //送信ボタン本来の動作を実行します
                 }
-            }
+}
+
+window.onload = function() {
+  const spinner = document.getElementById('loading');
+  spinner.classList.add('loaded');
+}
