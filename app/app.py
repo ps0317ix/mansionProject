@@ -2,6 +2,7 @@ import get_mansion
 from flask import Flask, render_template, request, make_response, redirect, url_for
 import sqlite3
 import set_mappin
+import get_all_mansion
 
 XLSX_MIMETYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
@@ -32,7 +33,11 @@ def post():
     try:
         load_url = request.form["url"]
         times = request.form["times"]
-        contents = get_mansion.get_mansion(load_url, times)
+        num = request.form["num"]
+        if times == "単体":
+            contents = get_mansion.get_mansion(load_url)
+        elif times == "一括":
+            contents = get_all_mansion.get_all_mansion(load_url, num)
         return render_template("result.html", contents=contents, transaction_id=contents[4])
     except:
         # e = get_mansion.get_mansion().e
@@ -86,4 +91,4 @@ def page_not_found(error):
     return render_template('page_not_found.html'), 404
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port='5000')
+    app.run(debug=True, port=8888, threaded=True)

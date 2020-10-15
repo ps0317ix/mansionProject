@@ -187,11 +187,15 @@ def set_mappin(transaction_id):
             element.send_keys(mansion[1])
             element.send_keys(Keys.ENTER)
             time.sleep(2 + speed)
-
-            elements = driver.find_elements_by_class_name('section-action-chip-button')
-            element = elements[1]
-            element.click()
-            time.sleep(1)
+            try:
+                element = driver.find_element_by_class_name('iRxY3GoUYUY__color-scheme-gm1-lightblue-300')
+                if element != None:
+                    continue
+            except:
+                elements = driver.find_elements_by_class_name('section-action-chip-button')
+                element = elements[1]
+                element.click()
+                time.sleep(1)
 
             elements = driver.find_elements_by_class_name('action-menu-has-icon')
             element = elements[3]

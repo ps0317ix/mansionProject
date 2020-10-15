@@ -6,73 +6,20 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import re
 import pathlib
-import random, string
 import sqlite3
 import datetime
 import set_mappin
-
-
-def create_table(conn, c):
-    # テーブルの作成
-    c.execute('''CREATE TABLE teikyou_hantei(id int PRIMARY KEY, mansion_name text, address text, result text, transaction_id text, created_datetime TIMESTAMP DEFAULT (datetime(CURRENT_TIMESTAMP,'localtime')))''')
-
-def table_isexist(conn, cur):
-    cur.execute("""
-        SELECT COUNT(*) FROM sqlite_master 
-        WHERE TYPE='table' AND name='teikyou_hantei'
-        """)
-    if cur.fetchone()[0] == 0:
-        return False
-    return True
-
-def randomname(n):
-   randlst = [random.choice(string.ascii_letters + string.digits) for i in range(n)]
-   return ''.join(randlst)
-
-def delete(con, pk):
-    """ 指定したキーのデータをDELETEする """
-    cur = con.cursor()
-    cur.execute('delete from teikyou_hantei where id=?', (pk,))
-    con.commit()
-
-def get_all():
-    conn = sqlite3.connect('teikyou_hantei.db')
-    cur = conn.cursor()
-    contents = cur.execute('SELECT * FROM teikyou_hantei').fetchall()
-    return contents
-
-def get_mansion_all():
-    conn = sqlite3.connect('teikyou_hantei.db')
-    cur = conn.cursor()
-    contents = cur.execute('SELECT mansion_name FROM teikyou_hantei').fetchall()
-    return contents
-
-
-def db_search(cur, mansion_name):
-    contents = cur.execute('SELECT * FROM teikyou_hantei WHERE mansion_name = ?', (mansion_name,)).fetchall()
-    print(contents)
-    if len(contents) > 0:
-        return True
-    else:
-        return False
-
-def past_search(mansions, mansion):
-    match = 0
-    for x in mansions:
-        if mansion == x:
-            match += 1
-            print("match:" + str(match))
-    if match > 0:
-        return True
+import get_mansion
 
 
 
-def get_mansion(load_url):
+
+def get_all_mansion(load_url, num):
     # データベースに接続する
     conn = sqlite3.connect('teikyou_hantei.db', detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     cur = conn.cursor()
     dbname = 'teikyou_hantei.db'
-    transaction_id = randomname(8)
+    transaction_id = get_mansion.randomname(8)
     # "TIMESTAMP"コンバータ関数 をそのまま ”DATETIME” にも使う
     sqlite3.dbapi2.converters['DATETIME'] = sqlite3.dbapi2.converters['TIMESTAMP']
 
@@ -84,8 +31,8 @@ def get_mansion(load_url):
         print(p.cwd())
         driver = webdriver.Chrome(p)
 
-        if table_isexist(conn, cur) == False:
-            create_table(conn, cur)
+        if get_mansion.table_isexist(conn, cur) == False:
+            get_mansion.create_table(conn, cur)
             db_id = 1
         else:
             try:
@@ -96,36 +43,69 @@ def get_mansion(load_url):
                 print(e)
                 db_id = 1
 
+        i = int(num)
         mansions = []
-        i = 1
 
-        while i < 2:
+        if "&page" in load_url:
+            load_url = re.sub('&([0-9a-zA-Z]*)=([0-9]*)', "", load_url)
+            print("正規化:" + load_url)
+        elif "?page" in load_url:
+            load_url = re.sub('?([0-9a-zA-Z]*)=([0-9]*)', "", load_url)
+            print("正規化:" + load_url)
+
+        try:
+            load_url = load_url + '&page=' + str(i)
+            print(load_url)
             html = requests.get(load_url)
             soup = BeautifulSoup(html.content, "html.parser")
-            print(load_url)
-
             city_name = soup.find(id='breadcrumb_3').text
+        except Exception as e:
+            load_url = re.sub('&([0-9a-zA-Z]*)=([0-9]*)', "", load_url)
+            print(load_url)
+            load_url = load_url + '?page=' + str(i)
+            html = requests.get(load_url)
+            soup = BeautifulSoup(html.content, "html.parser")
+            city_name = soup.find(id='breadcrumb_3').text
+
+        try:
+            i_max = soup.find(class_='pagination__current-page').text
+            i_max = i_max.replace(str(i) + "/", "")
+        except Exception as e:
+            i_max = 2
+        print("pageMax:" + str(i_max))
+        while i < int(i_max):
+            try:
+                load_url = load_url + '&page=' + str(i)
+                html = requests.get(load_url)
+                soup = BeautifulSoup(html.content, "html.parser")
+            except Exception as e:
+                load_url = load_url + '?page=' + str(i)
+                html = requests.get(load_url)
+                soup = BeautifulSoup(html.content, "html.parser")
             # すべてのheadingクラスを検索して、その文字列を表示する
             for element in soup.find_all(class_="heading"):
                 try:
                     print(element.text)
                     if 'の建物' in element.text:
                         continue
-                    elif db_search(cur, element.text) == True:
+                    elif get_mansion.db_search(cur, element.text) == True:
                         print('マンション名過去取得済み')
                         continue
-                    elif past_search(mansions, element.text) == True:
+                    elif get_mansion.past_search(mansions, element.text) == True:
                         print('マンション名が配列に重複しています')
                         continue
-                    mansions.append(element.text)
+                    else:
+                        mansions.append(element.text)
                 except Exception as e:
                     print(e)
                     mansions.append(element.text)
                     print(element.text)
+
             i += 1
 
         print(mansions)
 
+        time.sleep(3)
         driver.get("https://www.google.com/maps/")
 
         addresses = []
@@ -150,9 +130,6 @@ def get_mansion(load_url):
                 if element.text == "":
                     element = driver.find_element_by_class_name('ugiz4pqJLAG__primary-text')
                     if element.text == "":
-                        addresses.append("取得できませんでした")
-                    elif '[a-z]*' in element.text:
-                        print('住所に英語が含まれています')
                         addresses.append("取得できませんでした")
                 addresses.append(element.text)
                 time.sleep(2 + speed)
@@ -215,7 +192,6 @@ def get_mansion(load_url):
                         print(e)
                         addresses_num5.append("")
                 else:
-                    print(e)
                     zip1.append("")
                     zip2.append("")
                     addresses_num3.append("")
