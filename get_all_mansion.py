@@ -27,8 +27,13 @@ def get_all_mansion(load_url, num):
         speed = 0
         speed_han = 2
 
-        p = pathlib.Path('../mansionProject/chromedriver')
-        print(p.cwd())
+        try:
+            p = pathlib.Path('../mansionProject/chromedriver')
+            print(p.cwd())
+        except:
+            p = pathlib.Path('../app/chromedriver')
+            print("tryed:" + p.cwd())
+            
         driver = webdriver.Chrome(p)
 
         if get_mansion.table_isexist(conn, cur) == False:
