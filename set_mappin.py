@@ -1,6 +1,7 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 import datetime
 import pathlib
 import sqlite3
@@ -63,10 +64,22 @@ def set_all_mappin():
     account_mail = conf['account']['account_mail']
     account_pass = conf['account']['account_pass']
 
-    p = pathlib.Path('../mansionProject/chromedriver')
-    print(p.cwd())
-    driver = webdriver.Chrome(p)
-    driver.get("https://www.google.com/maps/")
+    # ローカルに保存しているChrome Driverを指定(※デプロイするときはコメントアウトする)
+    # p = pathlib.Path('../mansionProject/chromedriver')
+
+    # Heroku上のChrome Driverを指定(※デプロイするときはコメントを外す)
+    p = '/app/.chromedriver/bin/chromedriver'
+
+    # Headless Chromeをあらゆる環境で起動させるオプション
+    options = Options()
+    options.add_argument('--disable-gpu');
+    options.add_argument('--disable-extensions');
+    options.add_argument('--proxy-server="direct://"');
+    options.add_argument('--proxy-bypass-list=*');
+    options.add_argument('--start-maximized');
+    options.add_argument('--headless');
+
+    driver = webdriver.Chrome(executable_path=p, chrome_options=options)
 
     time.sleep(3)
     element = driver.find_element_by_id('gb_70')

@@ -81,9 +81,20 @@ def get_mansion(load_url):
         speed = 0
         speed_han = 2
 
-        p = pathlib.Path('../mansionProject/chromedriver')
-        print(p.cwd())
-        driver = webdriver.Chrome(p)
+        # ローカルに保存しているChrome Driverを指定(※デプロイするときはコメントアウトする)
+        # p = pathlib.Path('../mansionProject/chromedriver')
+
+        # Heroku上のChrome Driverを指定(※デプロイするときはコメントを外す)
+        p = '/app/.chromedriver/bin/chromedriver'
+
+        # Headless Chromeをあらゆる環境で起動させるオプション
+        options = Options()
+        options.add_argument('--disable-gpu');
+        options.add_argument('--disable-extensions');
+        options.add_argument('--proxy-server="direct://"');
+        options.add_argument('--proxy-bypass-list=*');
+        options.add_argument('--start-maximized');
+        options.add_argument('--headless');
 
         if table_isexist(conn, cur) == False:
             create_table(conn, cur)

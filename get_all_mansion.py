@@ -32,7 +32,6 @@ def get_all_mansion(load_url, num):
 
         # Heroku上のChrome Driverを指定(※デプロイするときはコメントを外す)
         p = '/app/.chromedriver/bin/chromedriver'
-        print(p.cwd())
 
         # Headless Chromeをあらゆる環境で起動させるオプション
         options = Options()
