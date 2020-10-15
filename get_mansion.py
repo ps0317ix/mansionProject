@@ -96,6 +96,8 @@ def get_mansion(load_url):
         options.add_argument('--start-maximized');
         options.add_argument('--headless');
 
+        driver = webdriver.Chrome(executable_path=p, chrome_options=options)
+
         if table_isexist(conn, cur) == False:
             create_table(conn, cur)
             db_id = 1
