@@ -4,8 +4,8 @@ import time
 import openpyxl
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 import re
-import pathlib
 import sqlite3
 import datetime
 import set_mappin
@@ -27,14 +27,23 @@ def get_all_mansion(load_url, num):
         speed = 0
         speed_han = 2
 
-        try:
-            p = pathlib.Path('../mansionProject/chromedriver')
-            print(p.cwd())
-        except:
-            p = pathlib.Path('../app/chromedriver')
-            print("tryed:" + p.cwd())
-            
-        driver = webdriver.Chrome(p)
+        # ローカルに保存しているChrome Driverを指定(※デプロイするときはコメントアウトする)
+        # p = pathlib.Path('../mansionProject/chromedriver')
+
+        # Heroku上のChrome Driverを指定(※デプロイするときはコメントを外す)
+        p = '/app/.chromedriver/bin/chromedriver'
+        print(p.cwd())
+
+        # Headless Chromeをあらゆる環境で起動させるオプション
+        options = Options()
+        options.add_argument('--disable-gpu');
+        options.add_argument('--disable-extensions');
+        options.add_argument('--proxy-server="direct://"');
+        options.add_argument('--proxy-bypass-list=*');
+        options.add_argument('--start-maximized');
+        options.add_argument('--headless');
+
+        driver = webdriver.Chrome(executable_path=p, chrome_options=options)
 
         if get_mansion.table_isexist(conn, cur) == False:
             get_mansion.create_table(conn, cur)
